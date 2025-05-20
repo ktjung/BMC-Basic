@@ -1,17 +1,7 @@
-let chart;
-let latestProfitUsd = 0;
-let currentROI = null;
-
 async function fetchBTCPrice() {
   const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd");
   const data = await res.json();
   return data.bitcoin.usd;
-}
-
-async function fetchExchangeRate() {
-  const res = await fetch("https://api.exchangerate-api.com/v4/latest/USD");
-  const data = await res.json();
-  return data.rates.KRW;
 }
 
 function getHashrateUnit() {
@@ -23,7 +13,6 @@ async function calculate() {
   const powerRate = parseFloat(document.getElementById("power").value);
   const electricity = parseFloat(document.getElementById("electricity").value);
   const feePercent = parseFloat(document.getElementById("fee").value);
-  const hardwareCost = parseFloat(document.getElementById("hardware_cost").value);
   const hours = parseFloat(document.getElementById("hours").value);
 
   const btcPrice = await fetchBTCPrice();
@@ -45,10 +34,6 @@ async function calculate() {
   const powerInKW = powerRate * userHashrate;
   const dailyCost = powerInKW * hours * electricity;
   const dailyProfit = revenueAfterFee - dailyCost;
-  latestProfitUsd = dailyProfit;
-
-  const roi = dailyProfit > 0 ? Math.ceil(hardwareCost / dailyProfit) : null;
-  currentROI = roi;
 
   document.getElementById("btc_price").textContent = btcPrice.toFixed(2);
   document.getElementById("daily_btc").textContent = dailyBTC.toFixed(8);
@@ -57,126 +42,10 @@ async function calculate() {
   document.getElementById("daily_rev").textContent = revenueAfterFee.toFixed(2);
   document.getElementById("daily_cost").textContent = dailyCost.toFixed(2);
   document.getElementById("daily_profit").textContent = dailyProfit.toFixed(2);
-  document.getElementById("roi").textContent = roi ? roi : "수익 없음";
 
   document.getElementById("output").classList.add("show");
-
-  drawChart(dailyProfit, hardwareCost, roi, dailyBTC);
 }
 
-function drawChart(dailyProfit, hardwareCost, roi, dailyBTC = 0) {
-  const labels = [1, 7, 30, 100, 200, 300, 365];
-  if (roi && !labels.includes(roi)) {
-    labels.push(roi);
-    labels.sort((a, b) => a - b);
-  }
-
-  const profits = labels.map(day => +(dailyProfit * day).toFixed(2));
-  const investments = labels.map(() => hardwareCost);
-  const btcAmounts = labels.map(day => +(dailyBTC * day).toFixed(8));
-
-  const barColors = labels.map(day => {
-    if (roi && day === roi) return "rgba(0, 255, 0, 1)";
-    if (roi && day > roi) return "rgba(255, 99, 132, 0.8)";
-    return "rgba(54, 162, 235, 0.6)";
-  });
-
-  const ctx = document.getElementById("profitChart").getContext("2d");
-  if (chart) chart.destroy();
-
-  chart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: labels.map(l => `${l}일`),
-      datasets: [
-        {
-          type: 'line',
-          label: "BTC 채굴량",
-          data: btcAmounts,
-          borderColor: "orange",
-          backgroundColor: "rgba(255, 165, 0, 0.3)",
-          yAxisID: 'y1',
-          tension: 0.3,
-          borderWidth: 3,
-          zIndex: 100
-        },
-        {
-          label: "순이익 ($)",
-          data: profits,
-          backgroundColor: barColors,
-          yAxisID: 'y',
-        },
-        {
-          label: "투자금 ($)",
-          data: investments,
-          backgroundColor: "rgba(128, 128, 128, 0.4)",
-          yAxisID: 'y',
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: function(tooltipItem) {
-              const datasetLabel = tooltipItem.dataset.label;
-              const value = tooltipItem.raw;
-
-              if (datasetLabel === "BTC 채굴량") {
-                return `${datasetLabel}: ${value} BTC`;
-              }
-              return `${datasetLabel}: $${value}`;
-            }
-          }
-        },
-        legend: {
-          position: "top",
-        }
-      },
-      scales: {
-        y: {
-          ticks: {
-            beginAtZero: true,
-            callback: value => `$${value}`
-          }
-        },
-        y1: {
-          position: "right",
-          ticks: {
-            callback: value => `${value} BTC`
-          }
-        }
-      }
-    }
-  });
-}
-
-async function openModal() {
-  const exchangeRate = await fetchExchangeRate();
-  document.getElementById("exchangeRateDisplay").textContent = exchangeRate.toFixed(2);
-
-  const daily = latestProfitUsd * exchangeRate;
-  const monthly = daily * 30;
-  const yearly = daily * 365;
-
-  document.getElementById("dailyProfitKrw").textContent = Math.round(daily).toLocaleString('ko-KR');
-  document.getElementById("monthlyProfitKrw").textContent = Math.round(monthly).toLocaleString('ko-KR');
-  document.getElementById("yearlyProfitKrw").textContent = Math.round(yearly).toLocaleString('ko-KR');
-
-  document.getElementById("exchangeModal").classList.add("open");
-}
-
-function closeModal() {
-  document.getElementById("exchangeModal").classList.remove("open");
-}
-
-// 다크모드 토글
-document.getElementById("darkToggle").addEventListener("change", function () {
-  document.body.classList.toggle("dark-mode", this.checked);
-});
-
-// 설명 모달 열기
 function showInfoModal(type) {
   let infoText = "";
   switch (type) {
@@ -204,7 +73,6 @@ function showInfoModal(type) {
   modal.classList.add("show");
 }
 
-// 설명 모달 닫기
 function closeInfoModal() {
   document.getElementById("infoModal").classList.remove("show");
 }
