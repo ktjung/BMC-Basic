@@ -16,25 +16,39 @@ async function calculate() {
   const hours = parseFloat(document.getElementById("hours").value);
 
   const btcPrice = await fetchBTCPrice();
-  const blockRewardBTC = 3.125;
-  const blocksPerDay = 144;
-  const networkHashrate = 867000000; // TH/s
+  const blockRewardBTC = 3.125; // 블록 보상
+  const blocksPerDay = 144; // 하루 블록 개수
+  const networkHashrate = 867000000000; // 네트워크 해시레이트 (867EH/s)
 
   let userHashrate = hashrate;
   const unit = getHashrateUnit();
-  if (unit === "GH/s") userHashrate *= 0.001;
-  if (unit === "MH/s") userHashrate *= 0.000001;
+  if (unit === "GH/s") userHashrate *= 0.001; // GH/s -> TH/s
+  if (unit === "MH/s") userHashrate *= 0.000001; // MH/s -> TH/s
 
-  const userHashrateHps = userHashrate * 1e12;
+  const userHashrateHps = userHashrate * 1e12; // 사용자의 해시레이트 (TH/s -> H/s 변환)
+
+  // 채굴량 계산
   let dailyBTC = blockRewardBTC * blocksPerDay * (userHashrateHps / (networkHashrate * 1e12));
+  
+  // 수수료를 고려한 채굴량
   dailyBTC *= (1 - feePercent / 100);
+  
+  // 0.000353454 BTC로 맞추기 위한 수수료 계산
+  const targetBTC = 0.000353454;
+  const actualFeePercent = ((dailyBTC - targetBTC) / dailyBTC) * 100;
 
+  // 수수료 적용 후 수익 계산
   const revenueBeforeFee = dailyBTC * btcPrice;
   const revenueAfterFee = revenueBeforeFee - (revenueBeforeFee * feePercent / 100);
+
+  // 전기세 계산
   const powerInKW = powerRate * userHashrate;
   const dailyCost = powerInKW * hours * electricity;
+  
+  // 하루 이익 계산
   const dailyProfit = revenueAfterFee - dailyCost;
 
+  // 출력
   document.getElementById("btc_price").textContent = btcPrice.toFixed(2);
   document.getElementById("daily_btc").textContent = dailyBTC.toFixed(8);
   document.getElementById("monthly_btc").textContent = (dailyBTC * 30).toFixed(8);
@@ -42,6 +56,9 @@ async function calculate() {
   document.getElementById("daily_rev").textContent = revenueAfterFee.toFixed(2);
   document.getElementById("daily_cost").textContent = dailyCost.toFixed(2);
   document.getElementById("daily_profit").textContent = dailyProfit.toFixed(2);
+  
+  // 예상 수수료 변경 값 출력
+  document.getElementById("actual_fee_percent").textContent = actualFeePercent.toFixed(2) + "%";
 
   document.getElementById("output").classList.add("show");
 }
