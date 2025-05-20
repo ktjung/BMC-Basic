@@ -1,13 +1,16 @@
+// BTC 가격을 가져오는 함수
 async function fetchBTCPrice() {
   const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd");
   const data = await res.json();
   return data.bitcoin.usd;
 }
 
+// 해시레이트 단위 확인
 function getHashrateUnit() {
   return document.querySelector('input[name="hashrate_unit"]:checked').value;
 }
 
+// 채굴 수익 계산
 async function calculate() {
   const hashrate = parseFloat(document.getElementById("hashrate").value);
   const powerRate = parseFloat(document.getElementById("power").value);
@@ -15,11 +18,10 @@ async function calculate() {
   const feePercent = parseFloat(document.getElementById("fee").value);
   const hours = parseFloat(document.getElementById("hours").value);
 
-  const btcPrice = await fetchBTCPrice();
+  const btcPrice = await fetchBTCPrice(); // BTC 가격 가져오기
   const blockRewardBTC = 3.125; // 블록 보상
-  const blocksPerDay = 144; // 하루 블록 개수
-  const totalNetworkDailyBTC = 462; // 하루 전체 채굴량
-  const networkHashrate = 867000000; // 네트워크 해시레이트 (867EH/s)
+  const totalNetworkDailyBTC = 462; // 하루 전체 네트워크 채굴량 (450 + 거래 수수료 12개)
+  const networkHashrate = 867000000; // 전체 네트워크 해시레이트 (867EH/s)
 
   let userHashrate = hashrate;
   const unit = getHashrateUnit();
@@ -29,18 +31,14 @@ async function calculate() {
   const userHashrateHps = userHashrate * 1e12; // 사용자의 해시레이트 (TH/s -> H/s 변환)
 
   // 채굴량 계산
-  let dailyBTC = blockRewardBTC * blocksPerDay * (userHashrateHps / (networkHashrate * 1e12));
-  
-  // 수수료를 고려한 채굴량
-  dailyBTC *= (1 - feePercent / 100);
-  
-  // 0.000353454 BTC로 맞추기 위한 수수료 계산
-  const targetBTC = 0.000353454;
-  const actualFeePercent = ((dailyBTC - targetBTC) / dailyBTC) * 100;
+  let dailyBTC = totalNetworkDailyBTC * (userHashrateHps / (networkHashrate * 1e12));
 
-  // 수수료 적용 후 수익 계산
-  const revenueBeforeFee = dailyBTC * btcPrice;
-  const revenueAfterFee = revenueBeforeFee - (revenueBeforeFee * feePercent / 100);
+  // 풀 수수료를 반영한 채굴량 계산
+  const dailyBTCWithFee = dailyBTC * (1 - feePercent / 100);
+
+  // 수익 계산 (BTC -> USD)
+  const revenueBeforeFee = dailyBTCWithFee * btcPrice;
+  const revenueAfterFee = revenueBeforeFee;
 
   // 전기세 계산
   const powerInKW = powerRate * userHashrate;
@@ -49,21 +47,18 @@ async function calculate() {
   // 하루 이익 계산
   const dailyProfit = revenueAfterFee - dailyCost;
 
-  // 출력
+  // 결과 출력
   document.getElementById("btc_price").textContent = btcPrice.toFixed(2);
-  document.getElementById("daily_btc").textContent = dailyBTC.toFixed(8);
-  document.getElementById("monthly_btc").textContent = (dailyBTC * 30).toFixed(8);
-  document.getElementById("yearly_btc").textContent = (dailyBTC * 365).toFixed(8);
+  document.getElementById("daily_btc").textContent = dailyBTCWithFee.toFixed(8);
+  document.getElementById("monthly_btc").textContent = (dailyBTCWithFee * 30).toFixed(8);
+  document.getElementById("yearly_btc").textContent = (dailyBTCWithFee * 365).toFixed(8);
   document.getElementById("daily_rev").textContent = revenueAfterFee.toFixed(2);
   document.getElementById("daily_cost").textContent = dailyCost.toFixed(2);
   document.getElementById("daily_profit").textContent = dailyProfit.toFixed(2);
-  
-  // 예상 수수료 변경 값 출력
-  document.getElementById("actual_fee_percent").textContent = actualFeePercent.toFixed(2) + "%";
 
+  // 결과 애니메이션
   document.getElementById("output").classList.add("show");
 }
-
 function showInfoModal(type) {
   let infoText = "";
   switch (type) {
