@@ -55,7 +55,6 @@ async function calculate() {
   document.getElementById("daily_rev").textContent = revenueAfterFee.toFixed(2);
   document.getElementById("daily_cost").textContent = dailyCost.toFixed(2);
   document.getElementById("daily_profit").textContent = dailyProfit.toFixed(2);
-  document.getElementById("roi").textContent = currentROI ? currentROI : "수익 없음";
 
   // 결과 애니메이션
   document.getElementById("output").classList.add("show");
