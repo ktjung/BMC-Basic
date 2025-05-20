@@ -55,6 +55,7 @@ async function calculate() {
   document.getElementById("daily_rev").textContent = revenueAfterFee.toFixed(2);
   document.getElementById("daily_cost").textContent = dailyCost.toFixed(2);
   document.getElementById("daily_profit").textContent = dailyProfit.toFixed(2);
+  document.getElementById("roi").textContent = currentROI ? currentROI : "수익 없음";
 
   // 결과 애니메이션
   document.getElementById("output").classList.add("show");
@@ -73,9 +74,6 @@ function showInfoModal(type) {
       break;
     case 'fee':
       infoText = "채굴 풀에서 부과하는 수수료입니다.";
-      break;
-    case 'hardware_cost':
-      infoText = "채굴에 필요한 장비에 투자한 가격입니다.";
       break;
     default:
       infoText = "정보를 불러올 수 없습니다.";
