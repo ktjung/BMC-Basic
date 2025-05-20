@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BTC 채굴 수익 계산기 Basic</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div style="text-align: right; margin-bottom: 10px;">
+  <label style="cursor: pointer;">
+    🌙 다크모드
+    <label class="switch">
+      <input type="checkbox" id="darkToggle" />
+      <span class="slider"></span>
+    </label>
+  </label>
+</div>
+
+<h2>BTC 채굴 수익 계산기</h2>
+
+<div class="hashrate-selection">
+  <label><input type="radio" name="hashrate_unit" value="TH/s" checked> TH/s</label>
+  <label><input type="radio" name="hashrate_unit" value="GH/s"> GH/s</label>
+  <label><input type="radio" name="hashrate_unit" value="MH/s"> MH/s</label>
+</div>
+
+<input type="number" id="hashrate" value="670" placeholder="해시레이트" />
+
+<div class="row-3">
+  <div>
+    <label>전기 요금 ($/kWh)<span class="info-icon" onclick="showInfoModal('electricity')" style="color: #edb0b0;">ⓘ</span></label>
+    <input type="number" id="electricity" value="0.036" />
+  </div>
+  <div>
+    <label>전력 소비량 (kW/TH)<span class="info-icon" onclick="showInfoModal('power')" style="color: #edb0b0;">ⓘ</span></label>
+    <input type="number" id="power" value="0.019" />
+  </div>
+  <div>
+    <label>사용 시간 (h)<span class="info-icon" onclick="showInfoModal('hours')" style="color: #edb0b0;">ⓘ</span></label>
+    <input type="number" id="hours" value="24" />
+  </div>
+</div>
+
+<label>풀 수수료 (%)<span class="info-icon" onclick="showInfoModal('fee')" style="color: #edb0b0;">ⓘ</span></label>
+<input type="number" id="fee" value="23.4" />
+
+<label>장비 가격 ($)<span class="info-icon" onclick="showInfoModal('hardware_cost')" style="color: #edb0b0;">ⓘ</span></label>
+<input type="number" id="hardware_cost" value="10500" />
+
+<div class="button-container">
+  <button class="calculate-btn" onclick="calculate()">계산하기</button>
+  <button class="exchange-btn" onclick="openModal()">환율 확인</button>
+</div>
+
+<div class="result" id="output">
+  <p><strong>BTC 가격:</strong> $<span id="btc_price"></span></p>
+  <p><strong>일일 채굴량 (BTC):</strong> <span id="daily_btc"></span> BTC</p>
+  <p><strong>월간 / 연간 채굴량:</strong> <span id="monthly_btc"></span> BTC / <span id="yearly_btc"></span> BTC</p>
+  <p><strong>일일 수익 (전기요금 -전):</strong> $<span id="daily_rev"></span></p>
+  <p><strong>일일 전기 요금:</strong> $<span id="daily_cost"></span></p>
+  <p><strong>일일 순이익:</strong> $<span id="daily_profit"></span></p>
+  <p><strong>ROI (투자 회수기간):</strong> <span id="roi"></span> 일</p>
+</div>
+
+<canvas id="profitChart"></canvas>
+
+<div id="exchangeModal">
+  <p><strong>실시간 환율 (USD → KRW):</strong> ₩<span id="exchangeRateDisplay"></span></p>
+  <p><strong>일일 순이익 (KRW):</strong> ₩<span id="dailyProfitKrw"></span></p>
+  <p><strong>월간 순이익 (KRW):</strong> ₩<span id="monthlyProfitKrw"></span></p>
+  <p><strong>연간 순이익 (KRW):</strong> ₩<span id="yearlyProfitKrw"></span></p>
+  <button onclick="closeModal()">닫기</button>
+</div>
+
+<div id="infoModal" class="info-modal">
+  <p id="infoText"></p>
+  <button onclick="closeInfoModal()">닫기</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
