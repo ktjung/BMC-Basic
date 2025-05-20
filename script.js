@@ -18,7 +18,8 @@ async function calculate() {
   const btcPrice = await fetchBTCPrice();
   const blockRewardBTC = 3.125; // 블록 보상
   const blocksPerDay = 144; // 하루 블록 개수
-  const networkHashrate = 867000000000; // 네트워크 해시레이트 (867EH/s)
+  const totalNetworkDailyBTC = 462; // 하루 전체 채굴량
+  const networkHashrate = 867000000; // 네트워크 해시레이트 (867EH/s)
 
   let userHashrate = hashrate;
   const unit = getHashrateUnit();
