@@ -13,6 +13,15 @@ input, select {
   box-sizing: border-box;
 }
 
+#output {
+  display: none;
+  transition: all 0.3s ease;
+}
+
+#output.show {
+  display: block;
+}
+
 label {
   margin-top: 10px;
   margin-bottom: 5px;
