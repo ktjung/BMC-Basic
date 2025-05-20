@@ -18,7 +18,7 @@ async function calculate() {
   const btcPrice = await fetchBTCPrice();
   const blockRewardBTC = 3.125;
   const blocksPerDay = 144;
-  const networkHashrate = 500000000; // TH/s
+  const networkHashrate = 867000000; // TH/s
 
   let userHashrate = hashrate;
   const unit = getHashrateUnit();
